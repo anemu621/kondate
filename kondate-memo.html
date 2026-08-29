@@ -92,6 +92,10 @@
   .photo-viewer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 60; }
   .photo-viewer-overlay img { max-width: 92vw; max-height: 85vh; object-fit: contain; border-radius: 4px; }
   .photo-viewer-close { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+  .photo-viewer-count { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 12px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; }
+  .photo-viewer-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.18); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .photo-viewer-prev { left: 10px; }
+  .photo-viewer-next { right: 10px; }
 </style>
 </head>
 <body>
@@ -181,7 +185,7 @@ var state = {
   error: null,
   saving: false,
   savedFlash: false,
-  viewingPhoto: null
+  viewingIndex: null
 };
 
 var pendingPhotoDataUrl = null;
@@ -435,12 +439,16 @@ function renderCalendar() {
   return html;
 }
 
-function renderGallery() {
-  var withPhotos = state.entries.filter(function (e) { return e.photo; })
+function getGalleryPhotos() {
+  return state.entries.filter(function (e) { return e.photo; })
     .sort(function (a, b) {
       if (a.date !== b.date) return a.date < b.date ? 1 : -1;
       return (b.createdAt || 0) - (a.createdAt || 0);
     });
+}
+
+function renderGallery() {
+  var withPhotos = getGalleryPhotos();
   if (withPhotos.length === 0) {
     return (
       '<div class="list">' +
@@ -464,11 +472,20 @@ function renderGallery() {
 }
 
 function renderPhotoViewer() {
-  if (!state.viewingPhoto) return "";
+  if (state.viewingIndex === null) return "";
+  var photos = getGalleryPhotos();
+  if (photos.length === 0) return "";
+  var idx = Math.max(0, Math.min(state.viewingIndex, photos.length - 1));
+  var entry = photos[idx];
+  var hasPrev = idx > 0;
+  var hasNext = idx < photos.length - 1;
   return (
-    '<div class="photo-viewer-overlay" data-action="close-viewer">' +
+    '<div class="photo-viewer-overlay" data-action="close-viewer" id="photo-viewer">' +
       '<button class="photo-viewer-close" data-action="close-viewer">✕</button>' +
-      '<img src="' + state.viewingPhoto + '" alt="" />' +
+      '<div class="photo-viewer-count">' + (idx + 1) + ' / ' + photos.length + '</div>' +
+      (hasPrev ? '<button class="photo-viewer-nav photo-viewer-prev" data-action="prev-photo">‹</button>' : '') +
+      (hasNext ? '<button class="photo-viewer-nav photo-viewer-next" data-action="next-photo">›</button>' : '') +
+      '<img src="' + entry.photo + '" alt="" />' +
     '</div>'
   );
 }
@@ -590,9 +607,10 @@ function attachEvents() {
 
   app.querySelectorAll('[data-action="view-photo"]').forEach(function (item) {
     item.addEventListener("click", function () {
-      var entry = state.entries.find(function (e) { return e.id === item.getAttribute("data-id"); });
-      if (entry && entry.photo) {
-        state.viewingPhoto = entry.photo;
+      var photos = getGalleryPhotos();
+      var idx = photos.findIndex(function (e) { return e.id === item.getAttribute("data-id"); });
+      if (idx >= 0) {
+        state.viewingIndex = idx;
         render();
       }
     });
@@ -600,10 +618,57 @@ function attachEvents() {
 
   app.querySelectorAll('[data-action="close-viewer"]').forEach(function (el) {
     el.addEventListener("click", function () {
-      state.viewingPhoto = null;
+      state.viewingIndex = null;
       render();
     });
   });
+
+  app.querySelectorAll('[data-action="prev-photo"]').forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (state.viewingIndex > 0) {
+        state.viewingIndex -= 1;
+        render();
+      }
+    });
+  });
+
+  app.querySelectorAll('[data-action="next-photo"]').forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var photos = getGalleryPhotos();
+      if (state.viewingIndex < photos.length - 1) {
+        state.viewingIndex += 1;
+        render();
+      }
+    });
+  });
+
+  var photoViewer = document.getElementById("photo-viewer");
+  if (photoViewer) {
+    var touchStartX = null;
+    photoViewer.addEventListener("touchstart", function (e) {
+      touchStartX = e.touches[0].clientX;
+    });
+    photoViewer.addEventListener("touchend", function (e) {
+      if (touchStartX === null) return;
+      var dx = e.changedTouches[0].clientX - touchStartX;
+      touchStartX = null;
+      var threshold = 40;
+      if (dx > threshold) {
+        if (state.viewingIndex > 0) {
+          state.viewingIndex -= 1;
+          render();
+        }
+      } else if (dx < -threshold) {
+        var photos = getGalleryPhotos();
+        if (state.viewingIndex < photos.length - 1) {
+          state.viewingIndex += 1;
+          render();
+        }
+      }
+    });
+  }
 
   var prevBtn = app.querySelector('[data-action="prev-month"]');
   if (prevBtn) prevBtn.addEventListener("click", function () { changeMonth(-1); });
