@@ -11,91 +11,92 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --pink:#E8A93A; --pink-dark:#C98A1F; --pink-light:#FDF3DA; }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: contain;
-    background: var(--pink-light);
-    color: #4A2C3A;
-    font-family: 'Noto Sans JP', sans-serif;
-  }
-  #app { min-height: 100vh; display: flex; flex-direction: column; position: relative; }
-  .header { padding: 22px 18px 0; background: #fff; border-bottom: 1px solid #F5E8C8; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 8px; flex-wrap: wrap; }
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .brand-mark { width: 34px; height: 34px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
-  .brand-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .brand-text { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--pink-dark); }
-  .view-switch { display: flex; background: var(--pink-light); border-radius: 20px; padding: 3px; gap: 2px; }
-  .view-btn { display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: #B89550; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-family: inherit; }
-  .view-btn.active { background: var(--pink); color: #fff; }
-  .backup-row { display: flex; gap: 8px; padding: 0 0 16px; }
-  .backup-btn { flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px; border: 1px solid #F0DDA8; background: #FFFBF0; color: #C98A1F; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
-  .error-banner { margin: 10px 18px 0; padding: 8px 12px; background: #FBE4EC; border: 1px solid #F0A8C4; color: #B0356A; font-size: 12px; border-radius: 8px; }
-  .saved-banner { margin: 10px 18px 0; padding: 8px 12px; background: #E9F7EE; border: 1px solid #B6E3C5; color: #2E7D4F; font-size: 12px; border-radius: 8px; font-weight: 700; }
-  .list { flex: 1; overflow-y: auto; padding: 18px 16px 100px; }
-  .empty-state { text-align: center; color: #4A2C3A; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; }
-  .loading-state { text-align: center; color: #A98F5C; padding: 80px 20px; font-size: 13px; }
-  .date-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; padding: 0 2px; }
-  .date-header-text { font-weight: 700; font-size: 14px; color: #4A2C3A; }
-  .date-header-sub { font-size: 11px; color: #B89550; font-family: 'JetBrains Mono', monospace; }
-  .card { background: #fff; border: 1px solid #F5E8C8; border-radius: 12px; margin-bottom: 10px; overflow: hidden; animation: wl-in 0.2s ease; }
-  @keyframes wl-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  .card-top { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 4px; }
-  .card-label { font-size: 14px; font-weight: 700; color: var(--pink-dark); }
-  .delete-btn { background: none; border: none; padding: 4px; cursor: pointer; border-radius: 6px; line-height: 1; font-size: 14px; flex-shrink: 0; }
-  .bullet-list { padding: 4px 14px 12px; margin: 0; list-style: none; }
-  .bullet-list li { position: relative; padding-left: 16px; font-size: 13.5px; color: #4A2C3A; line-height: 1.7; }
-  .bullet-list li::before { content: "●"; position: absolute; left: 0; font-size: 8px; top: 8px; color: var(--pink); }
-  .card-photo img { width: 100%; max-height: 260px; object-fit: cover; display: block; }
-  .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--pink); border: none; box-shadow: 0 6px 16px rgba(232,169,58,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-size: 26px; font-weight: 700; z-index: 20; }
-  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .cal-nav-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #F5E8C8; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--pink-dark); font-size: 18px; }
-  .cal-month-label { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: #4A2C3A; }
-  .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 6px; }
-  .weekday-cell { text-align: center; font-size: 11px; color: #B89550; font-weight: 700; padding: 4px 0; }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .cal-cell-empty { min-height: 44px; }
-  .cal-cell { min-height: 44px; border: 1px solid #F5E8C8; background: #fff; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; color: #4A2C3A; font-family: inherit; padding: 4px 2px; }
-  .cal-cell.today { border: 1px solid var(--pink); color: var(--pink-dark); }
-  .cal-cell.selected { background: var(--pink); border-color: var(--pink); color: #fff; }
-  .cal-day-num { font-size: 13px; }
-  .cal-day-num.today { font-weight: 800; }
-  .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--pink); }
-  .cal-cell.selected .cal-dot { background: #fff; }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(74,44,58,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
-  .modal { background: #fff; border-top: 1px solid #F5E8C8; border-radius: 16px 16px 0 0; width: 100%; max-width: 480px; padding: 18px 18px 24px; display: flex; flex-direction: column; gap: 4px; max-height: 88vh; overflow-y: auto; }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .modal-title { font-size: 17px; font-weight: 700; color: #4A2C3A; }
-  .close-btn { background: none; border: none; cursor: pointer; padding: 4px; font-size: 14px; color: #B89550; }
-  label.field-label { font-size: 11.5px; color: #A98F5C; margin-top: 10px; margin-bottom: 5px; font-weight: 600; display: block; }
-  .field-input { width: 100%; background: #FFFBF0; border: 1px solid #F0DDA8; border-radius: 8px; padding: 10px 12px; color: #4A2C3A; font-size: 14px; font-family: inherit; }
-  .field-input:focus { outline: none; border-color: var(--pink) !important; }
-  textarea.field-input { resize: vertical; min-height: 110px; }
-  .submit-btn { margin-top: 18px; background: var(--pink); color: #fff; border: none; border-radius: 10px; padding: 13px 0; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; font-family: inherit; }
-  .submit-btn:disabled { opacity: 0.6; }
-  .list::-webkit-scrollbar { width: 6px; }
-  .list::-webkit-scrollbar-thumb { background: #f4c9dc; border-radius: 3px; }
-  button:active { transform: scale(0.97); }
-  .label-suggest-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-  .label-suggest-btn { padding: 6px 12px; border-radius: 16px; border: 1px solid #F0DDA8; background: #FFFBF0; color: #C98A1F; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
-  .photo-input-btn { display: block; width: 100%; text-align: center; padding: 14px 0; border-radius: 8px; border: 1px dashed #F0DDA8; background: #FFFBF0; color: #C98A1F; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .photo-preview { margin-top: 10px; }
-  .photo-preview img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 10px; display: block; }
-  .hint-text { font-size: 11.5px; color: #B89550; margin-top: 4px; }
-  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .gallery-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #FDF3DA; cursor: pointer; }
-  .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .gallery-item .gallery-date { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(74,44,58,0.55); color: #fff; font-size: 9px; padding: 3px 5px; font-family: 'JetBrains Mono', monospace; }
-  .photo-viewer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 60; }
-  .photo-viewer-overlay img { max-width: 92vw; max-height: 85vh; object-fit: contain; border-radius: 4px; }
-  .photo-viewer-close { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; }
-  .photo-viewer-count { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 12px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; }
-  .photo-viewer-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.18); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .photo-viewer-prev { left: 10px; }
-  .photo-viewer-next { right: 10px; }
+:root { --pink:#E8A93A; --pink-dark:#C98A1F; --pink-light:#FDF3DA; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+-webkit-tap-highlight-color: transparent;
+overscroll-behavior-y: contain;
+background: var(--pink-light);
+color: #4A2C3A;
+font-family: 'Noto Sans JP', sans-serif;
+}
+#app { min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+.header { padding: 22px 18px 0; background: #fff; border-bottom: 1px solid #F5E8C8; }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 8px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.brand-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.brand-text { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--pink-dark); }
+.view-switch { display: flex; background: var(--pink-light); border-radius: 20px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.view-btn { display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: #B89550; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-family: inherit; }
+.view-btn.active { background: var(--pink); color: #fff; }
+.backup-row { display: flex; gap: 8px; padding: 0 0 16px; }
+.backup-btn { flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px; border: 1px solid #F0DDA8; background: #FFFBF0; color: #C98A1F; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.error-banner { margin: 10px 18px 0; padding: 8px 12px; background: #FBE4EC; border: 1px solid #F0A8C4; color: #B0356A; font-size: 12px; border-radius: 8px; }
+.saved-banner { margin: 10px 18px 0; padding: 8px 12px; background: #E9F7EE; border: 1px solid #B6E3C5; color: #2E7D4F; font-size: 12px; border-radius: 8px; font-weight: 700; }
+.list { flex: 1; overflow-y: auto; padding: 18px 16px 100px; }
+.empty-state { text-align: center; color: #4A2C3A; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; }
+.loading-state { text-align: center; color: #A98F5C; padding: 80px 20px; font-size: 13px; }
+.date-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; padding: 0 2px; }
+.date-header-text { font-weight: 700; font-size: 14px; color: #4A2C3A; }
+.date-header-sub { font-size: 11px; color: #B89550; font-family: 'JetBrains Mono', monospace; }
+.card { background: #fff; border: 1px solid #F5E8C8; border-radius: 12px; margin-bottom: 10px; overflow: hidden; animation: wl-in 0.2s ease; }
+@keyframes wl-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.card-top { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 4px; }
+.card-label { font-size: 14px; font-weight: 700; color: var(--pink-dark); }
+.delete-btn { background: none; border: none; padding: 4px; cursor: pointer; border-radius: 6px; line-height: 1; font-size: 14px; flex-shrink: 0; }
+.bullet-list { padding: 4px 14px 12px; margin: 0; list-style: none; }
+.bullet-list li { position: relative; padding-left: 16px; font-size: 13.5px; color: #4A2C3A; line-height: 1.7; }
+.bullet-list li::before { content: "●"; position: absolute; left: 0; font-size: 8px; top: 8px; color: var(--pink); }
+.card-photo img { width: 100%; max-height: 260px; object-fit: cover; display: block; }
+.fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--pink); border: none; box-shadow: 0 6px 16px rgba(232,169,58,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-size: 26px; font-weight: 700; z-index: 20; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cal-nav-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #F5E8C8; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--pink-dark); font-size: 18px; }
+.cal-month-label { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: #4A2C3A; }
+.weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 6px; }
+.weekday-cell { text-align: center; font-size: 11px; color: #B89550; font-weight: 700; padding: 4px 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-cell-empty { min-height: 44px; }
+.cal-cell { min-height: 44px; border: 1px solid #F5E8C8; background: #fff; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; color: #4A2C3A; font-family: inherit; padding: 4px 2px; }
+.cal-cell.today { border: 1px solid var(--pink); color: var(--pink-dark); }
+.cal-cell.selected { background: var(--pink); border-color: var(--pink); color: #fff; }
+.cal-day-num { font-size: 13px; }
+.cal-day-num.today { font-weight: 800; }
+.cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--pink); }
+.cal-cell.selected .cal-dot { background: #fff; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(74,44,58,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
+.modal { background: #fff; border-top: 1px solid #F5E8C8; border-radius: 16px 16px 0 0; width: 100%; max-width: 480px; padding: 18px 18px 24px; display: flex; flex-direction: column; gap: 4px; max-height: 88vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.modal-title { font-size: 17px; font-weight: 700; color: #4A2C3A; }
+.close-btn { background: none; border: none; cursor: pointer; padding: 4px; font-size: 14px; color: #B89550; }
+label.field-label { font-size: 11.5px; color: #A98F5C; margin-top: 10px; margin-bottom: 5px; font-weight: 600; display: block; }
+.field-input { width: 100%; background: #FFFBF0; border: 1px solid #F0DDA8; border-radius: 8px; padding: 10px 12px; color: #4A2C3A; font-size: 14px; font-family: inherit; }
+.field-input:focus { outline: none; border-color: var(--pink) !important; }
+textarea.field-input { resize: vertical; min-height: 110px; }
+.submit-btn { margin-top: 18px; background: var(--pink); color: #fff; border: none; border-radius: 10px; padding: 13px 0; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; font-family: inherit; }
+.submit-btn:disabled { opacity: 0.6; }
+.list::-webkit-scrollbar { width: 6px; }
+.list::-webkit-scrollbar-thumb { background: #f4c9dc; border-radius: 3px; }
+button:active { transform: scale(0.97); }
+.label-suggest-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.label-suggest-btn { padding: 6px 12px; border-radius: 16px; border: 1px solid #F0DDA8; background: #FFFBF0; color: #C98A1F; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.photo-input-btn { display: block; width: 100%; text-align: center; padding: 14px 0; border-radius: 8px; border: 1px dashed #F0DDA8; background: #FFFBF0; color: #C98A1F; font-size: 13px; font-weight: 600; cursor: pointer; }
+.photo-preview { margin-top: 10px; }
+.photo-preview img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 10px; display: block; }
+.hint-text { font-size: 11.5px; color: #B89550; margin-top: 4px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.gallery-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #FDF3DA; cursor: pointer; }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery-item .gallery-date { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(74,44,58,0.55); color: #fff; font-size: 9px; padding: 3px 5px; font-family: 'JetBrains Mono', monospace; }
+.photo-viewer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 60; }
+.photo-viewer-overlay img { max-width: 92vw; max-height: 85vh; object-fit: contain; border-radius: 4px; }
+.photo-viewer-close { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+.photo-viewer-count { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 12px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; }
+.photo-viewer-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.18); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.photo-viewer-prev { left: 10px; }
+.photo-viewer-next { right: 10px; }
+.recipe-name { margin-top: 6px; font-size: 12px; text-align: center; line-height: 1.35; color: #4A2C3A; word-break: break-word; }
 </style>
 </head>
 <body>
@@ -107,62 +108,62 @@
 var ICON_DATA_URI = "data:image/png;base64,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";
 
 (function setupIcons() {
-  var appleIcon = document.createElement("link");
-  appleIcon.rel = "apple-touch-icon";
-  appleIcon.href = ICON_DATA_URI;
-  document.head.appendChild(appleIcon);
-  var favicon = document.createElement("link");
-  favicon.rel = "icon";
-  favicon.href = ICON_DATA_URI;
-  document.head.appendChild(favicon);
+var appleIcon = document.createElement("link");
+appleIcon.rel = "apple-touch-icon";
+appleIcon.href = ICON_DATA_URI;
+document.head.appendChild(appleIcon);
+var favicon = document.createElement("link");
+favicon.rel = "icon";
+favicon.href = ICON_DATA_URI;
+document.head.appendChild(favicon);
 })();
 
 // ---------- storage helpers ----------
 async function loadJSON(key, fallback) {
-  try {
-    var raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch (e) {
-    return fallback;
-  }
+try {
+var raw = localStorage.getItem(key);
+return raw ? JSON.parse(raw) : fallback;
+} catch (e) {
+return fallback;
+}
 }
 async function saveJSON(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: (e && (e.message || e.toString())) || "unknown-error" };
-  }
+try {
+localStorage.setItem(key, JSON.stringify(value));
+return { ok: true };
+} catch (e) {
+return { ok: false, error: (e && (e.message || e.toString())) || "unknown-error" };
+}
 }
 
 // ---------- date helpers ----------
 function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 function todayStr() {
-  var d = new Date();
-  return ymd(d.getFullYear(), d.getMonth(), d.getDate());
+var d = new Date();
+return ymd(d.getFullYear(), d.getMonth(), d.getDate());
 }
 function ymd(y, m, d) {
-  return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
 }
 function formatDateLabel(dateStr) {
-  var d = new Date(dateStr + "T00:00:00");
-  var todayS = todayStr();
-  var yest = new Date();
-  yest.setDate(yest.getDate() - 1);
-  var yestS = yest.toISOString().slice(0, 10);
-  if (dateStr === todayS) return "今日";
-  if (dateStr === yestS) return "昨日";
-  return d.toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short" });
+var d = new Date(dateStr + "T00:00:00");
+var todayS = todayStr();
+var yest = new Date();
+yest.setDate(yest.getDate() - 1);
+var yestS = yest.toISOString().slice(0, 10);
+if (dateStr === todayS) return "今日";
+if (dateStr === yestS) return "昨日";
+return d.toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short" });
 }
 function escapeHtml(str) {
-  return String(str == null ? "" : str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+return String(str == null ? "" : str)
+.replace(/&/g, "&amp;")
+.replace(/</g, "&lt;")
+.replace(/>/g, "&gt;")
+.replace(/"/g, "&quot;")
+.replace(/'/g, "&#39;");
 }
 
 var WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
@@ -170,585 +171,751 @@ var LABEL_SUGGESTIONS = ["朝ごはん", "昼ごはん", "晩ごはん", "弁当
 
 // ---------- state ----------
 var state = {
-  entries: [],
-  loaded: false,
-  view: "calendar",
-  cursorMonth: (function () {
-    var d = new Date();
-    return { y: d.getFullYear(), m: d.getMonth() };
-  })(),
-  selectedDate: todayStr(),
-  showForm: false,
-  formDate: todayStr(),
-  formLabel: "朝ごはん",
-  editingId: null,
-  error: null,
-  saving: false,
-  savedFlash: false,
-  viewingIndex: null
+entries: [],
+recipes: [],
+loaded: false,
+view: "calendar",
+cursorMonth: (function () {
+var d = new Date();
+return { y: d.getFullYear(), m: d.getMonth() };
+})(),
+selectedDate: todayStr(),
+showForm: false,
+formMode: "entry",
+formDate: todayStr(),
+formLabel: "朝ごはん",
+formRecipeName: "",
+editingId: null,
+editingRecipeId: null,
+error: null,
+saving: false,
+savedFlash: false,
+viewingIndex: null
 };
-
 var pendingPhotoDataUrl = null;
+var pendingRecipePhotoDataUrl = null;
 
 function persistEntries() {
-  return saveJSON("kondate-entries", state.entries).then(function (res) {
-    if (!res.ok) showError(res.error);
-    return res.ok;
-  });
+return saveJSON("kondate-entries", state.entries).then(function (res) {
+if (!res.ok) showError(res.error);
+return res.ok;
+});
+}
+function persistRecipes() {
+return saveJSON("kondate-recipes", state.recipes).then(function (res) {
+if (!res.ok) showError(res.error);
+return res.ok;
+});
 }
 function showError(detail) {
-  state.error = "保存に失敗しました" + (detail ? "（" + detail + "）" : "") + "。もう一度お試しください。";
-  render();
-  setTimeout(function () {
-    state.error = null;
-    render();
-  }, 6000);
+state.error = "保存に失敗しました" + (detail ? "（" + detail + "）" : "") + "。もう一度お試しください。";
+render();
+setTimeout(function () {
+state.error = null;
+render();
+}, 6000);
 }
 function flashSaved() {
-  state.savedFlash = true;
-  render();
-  setTimeout(function () {
-    state.savedFlash = false;
-    render();
-  }, 1400);
+state.savedFlash = true;
+render();
+setTimeout(function () {
+state.savedFlash = false;
+render();
+}, 1400);
 }
 
 async function saveEntry(date, label, content, photo, editingId) {
-  if (editingId) {
-    var existing = state.entries.find(function (e) { return e.id === editingId; });
-    if (existing) {
-      existing.date = date;
-      existing.label = label;
-      existing.content = content;
-      existing.photo = photo || null;
-    }
-  } else {
-    state.entries.unshift({ id: uid(), createdAt: Date.now(), date: date, label: label, content: content, photo: photo || null });
-  }
-  state.saving = true;
-  render();
-  var ok = await persistEntries();
-  pendingPhotoDataUrl = null;
-  state.saving = false;
-  state.showForm = false;
-  state.editingId = null;
-  render();
-  if (ok) flashSaved();
+if (editingId) {
+var existing = state.entries.find(function (e) { return e.id === editingId; });
+if (existing) {
+existing.date = date;
+existing.label = label;
+existing.content = content;
+existing.photo = photo || null;
+}
+} else {
+state.entries.unshift({ id: uid(), createdAt: Date.now(), date: date, label: label, content: content, photo: photo || null });
+}
+state.saving = true;
+render();
+var ok = await persistEntries();
+pendingPhotoDataUrl = null;
+state.saving = false;
+state.showForm = false;
+state.editingId = null;
+render();
+if (ok) flashSaved();
 }
 async function deleteEntry(id) {
-  state.entries = state.entries.filter(function (e) { return e.id !== id; });
-  render();
-  await persistEntries();
+state.entries = state.entries.filter(function (e) { return e.id !== id; });
+render();
+await persistEntries();
 }
+
+async function saveRecipe(name, photo, note, editingId) {
+if (editingId) {
+var existing = state.recipes.find(function (r) { return r.id === editingId; });
+if (existing) {
+existing.name = name;
+existing.photo = photo || null;
+existing.note = note || "";
+}
+} else {
+state.recipes.unshift({ id: uid(), createdAt: Date.now(), name: name, photo: photo || null, note: note || "" });
+}
+state.saving = true;
+render();
+var ok = await persistRecipes();
+pendingRecipePhotoDataUrl = null;
+state.saving = false;
+state.showForm = false;
+state.editingRecipeId = null;
+render();
+if (ok) flashSaved();
+}
+async function deleteRecipe(id) {
+state.recipes = state.recipes.filter(function (r) { return r.id !== id; });
+render();
+await persistRecipes();
+}
+
 function entriesByDate(dateStr) {
-  return state.entries.filter(function (e) { return e.date === dateStr; })
-    .sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+return state.entries.filter(function (e) { return e.date === dateStr; })
+.sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
 }
 function resizeImageFile(file, callback) {
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    var img = new Image();
-    img.onload = function () {
-      var maxW = 640;
-      var scale = Math.min(1, maxW / img.width);
-      var canvas = document.createElement("canvas");
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      var ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      callback(canvas.toDataURL("image/jpeg", 0.6));
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+var reader = new FileReader();
+reader.onload = function (e) {
+var img = new Image();
+img.onload = function () {
+var maxW = 640;
+var scale = Math.min(1, maxW / img.width);
+var canvas = document.createElement("canvas");
+canvas.width = Math.round(img.width * scale);
+canvas.height = Math.round(img.height * scale);
+var ctx = canvas.getContext("2d");
+ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+callback(canvas.toDataURL("image/jpeg", 0.6));
+};
+img.src = e.target.result;
+};
+reader.readAsDataURL(file);
 }
 
 function datesWithEntries() {
-  var set = {};
-  state.entries.forEach(function (e) { set[e.date] = true; });
-  return set;
+var set = {};
+state.entries.forEach(function (e) { set[e.date] = true; });
+return set;
 }
 function monthGrid() {
-  var y = state.cursorMonth.y, m = state.cursorMonth.m;
-  var firstDay = new Date(y, m, 1);
-  var startWeekday = firstDay.getDay();
-  var daysInMonth = new Date(y, m + 1, 0).getDate();
-  var cells = [];
-  for (var i = 0; i < startWeekday; i++) cells.push(null);
-  for (var d = 1; d <= daysInMonth; d++) cells.push(d);
-  while (cells.length % 7 !== 0) cells.push(null);
-  return cells;
+var y = state.cursorMonth.y, m = state.cursorMonth.m;
+var firstDay = new Date(y, m, 1);
+var startWeekday = firstDay.getDay();
+var daysInMonth = new Date(y, m + 1, 0).getDate();
+var cells = [];
+for (var i = 0; i < startWeekday; i++) cells.push(null);
+for (var d = 1; d <= daysInMonth; d++) cells.push(d);
+while (cells.length % 7 !== 0) cells.push(null);
+return cells;
 }
 function changeMonth(delta) {
-  var m = state.cursorMonth.m + delta;
-  var y = state.cursorMonth.y;
-  if (m < 0) { m = 11; y -= 1; }
-  if (m > 11) { m = 0; y += 1; }
-  state.cursorMonth = { y: y, m: m };
-  render();
+var m = state.cursorMonth.m + delta;
+var y = state.cursorMonth.y;
+if (m < 0) { m = 11; y -= 1; }
+if (m > 11) { m = 0; y += 1; }
+state.cursorMonth = { y: y, m: m };
+render();
 }
 
 function exportData() {
-  var payload = { exportedAt: new Date().toISOString(), entries: state.entries };
-  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement("a");
-  a.href = url;
-  a.download = "kondate-memo-backup-" + todayStr() + ".json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+var payload = { exportedAt: new Date().toISOString(), entries: state.entries, recipes: state.recipes };
+var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+var url = URL.createObjectURL(blob);
+var a = document.createElement("a");
+a.href = url;
+a.download = "kondate-memo-backup-" + todayStr() + ".json";
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }
 async function importDataFromFile(file) {
-  try {
-    var text = await file.text();
-    var data = JSON.parse(text);
-    var map = {};
-    state.entries.forEach(function (e) { map[e.id] = e; });
-    (data.entries || []).forEach(function (e) { map[e.id] = e; });
-    state.entries = Object.values(map).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
-    render();
-    await persistEntries();
-    flashSaved();
-  } catch (e) {
-    state.error = "読み込みに失敗しました。ファイルを確認してください。";
-    render();
-    setTimeout(function () { state.error = null; render(); }, 4000);
-  }
+try {
+var text = await file.text();
+var data = JSON.parse(text);
+var map = {};
+state.entries.forEach(function (e) { map[e.id] = e; });
+(data.entries || []).forEach(function (e) { map[e.id] = e; });
+state.entries = Object.values(map).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+
+var rmap = {};
+state.recipes.forEach(function (r) { rmap[r.id] = r; });
+(data.recipes || []).forEach(function (r) { rmap[r.id] = r; });
+state.recipes = Object.values(rmap).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+
+render();
+await persistEntries();
+await persistRecipes();
+flashSaved();
+} catch (e) {
+state.error = "読み込みに失敗しました。ファイルを確認してください。";
+render();
+setTimeout(function () { state.error = null; render(); }, 4000);
+}
 }
 
 // ---------- rendering ----------
 function renderEntryCard(entry) {
-  var lines = (entry.content || "").split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
-  var listHtml = lines.length
-    ? '<ul class="bullet-list">' + lines.map(function (l) { return '<li>' + escapeHtml(l) + '</li>'; }).join("") + '</ul>'
-    : '';
-  var photoHtml = entry.photo ? '<div class="card-photo"><img src="' + entry.photo + '" alt="" /></div>' : '';
-  return (
-    '<div class="card" data-action="edit-entry" data-id="' + entry.id + '">' +
-      '<div class="card-top">' +
-        '<div class="card-label">' + escapeHtml(entry.label || "メモ") + '</div>' +
-        '<button class="delete-btn" data-action="delete-entry" data-id="' + entry.id + '" aria-label="削除">🗑</button>' +
-      '</div>' +
-      listHtml +
-      photoHtml +
-    '</div>'
-  );
+var lines = (entry.content || "").split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+var listHtml = lines.length
+? '<ul class="bullet-list">' + lines.map(function (l) { return '<li>' + escapeHtml(l) + '</li>'; }).join("") + '</ul>'
+: '';
+var photoHtml = entry.photo ? '<div class="card-photo"><img src="' + entry.photo + '" alt="" /></div>' : '';
+return (
+'<div class="card" data-action="edit-entry" data-id="' + entry.id + '">' +
+'<div class="card-top">' +
+'<div class="card-label">' + escapeHtml(entry.label || "メモ") + '</div>' +
+'<button class="delete-btn" data-action="delete-entry" data-id="' + entry.id + '" aria-label="削除">🗑</button>' +
+'</div>' +
+listHtml +
+photoHtml +
+'</div>'
+);
 }
 
 function renderHeader() {
-  return (
-    '<div class="header">' +
-      '<div class="header-top">' +
-        '<div class="brand">' +
-          '<div class="brand-mark"><img src="' + ICON_DATA_URI + '" alt="" /></div>' +
-          '<div class="brand-text">献立メモ</div>' +
-        '</div>' +
-        '<div class="view-switch">' +
-          '<button class="view-btn' + (state.view === "calendar" ? " active" : "") + '" data-action="view" data-view="calendar">📅 カレンダー</button>' +
-          '<button class="view-btn' + (state.view === "list" ? " active" : "") + '" data-action="view" data-view="list">📋 リスト</button>' +
-          '<button class="view-btn' + (state.view === "gallery" ? " active" : "") + '" data-action="view" data-view="gallery">🖼️ 写真</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="backup-row">' +
-        '<button class="backup-btn" data-action="export">📤 バックアップを書き出す</button>' +
-        '<label class="backup-btn" style="display:block;">📥 読み込む' +
-          '<input type="file" accept="application/json" id="import-input" style="display:none;" />' +
-        '</label>' +
-      '</div>' +
-    '</div>'
-  );
+return (
+'<div class="header">' +
+'<div class="header-top">' +
+'<div class="brand">' +
+'<div class="brand-mark"><img src="' + ICON_DATA_URI + '" alt="" /></div>' +
+'<div class="brand-text">献立メモ</div>' +
+'</div>' +
+'<div class="view-switch">' +
+'<button class="view-btn' + (state.view === "calendar" ? " active" : "") + '" data-action="view" data-view="calendar">📅 カレンダー</button>' +
+'<button class="view-btn' + (state.view === "list" ? " active" : "") + '" data-action="view" data-view="list">📋 リスト</button>' +
+'<button class="view-btn' + (state.view === "gallery" ? " active" : "") + '" data-action="view" data-view="gallery">🖼️ 写真</button>' +
+'<button class="view-btn' + (state.view === "recipe" ? " active" : "") + '" data-action="view" data-view="recipe">🍳 レシピ</button>' +
+'</div>' +
+'</div>' +
+'<div class="backup-row">' +
+'<button class="backup-btn" data-action="export">📤 バックアップを書き出す</button>' +
+'<label class="backup-btn" style="display:block;">📥 読み込む' +
+'<input type="file" accept="application/json" id="import-input" style="display:none;" />' +
+'</label>' +
+'</div>' +
+'</div>'
+);
 }
 
 function allDatesSorted() {
-  var set = {};
-  state.entries.forEach(function (e) { set[e.date] = true; });
-  return Object.keys(set).sort().reverse();
+var set = {};
+state.entries.forEach(function (e) { set[e.date] = true; });
+return Object.keys(set).sort().reverse();
 }
 
 function renderList() {
-  var dates = allDatesSorted();
-  if (dates.length === 0) {
-    return (
-      '<div class="list">' +
-        '<div class="empty-state">' +
-          '<div style="font-size:28px;">🍱</div>' +
-          '<div style="margin-top:10px;font-weight:700;">まだ献立がありません</div>' +
-          '<div style="margin-top:4px;color:#A98F5C;font-size:13px;">下の「+」ボタンから今日の献立を記録しましょう</div>' +
-        '</div>' +
-      '</div>'
-    );
-  }
-  var html = '<div class="list">';
-  dates.forEach(function (date) {
-    var entries = entriesByDate(date);
-    html += '<div style="margin-bottom:22px;">';
-    html += '<div class="date-header"><span class="date-header-text">' + formatDateLabel(date) + '</span><span class="date-header-sub">' + date + '</span></div>';
-    entries.forEach(function (e) { html += renderEntryCard(e); });
-    html += '</div>';
-  });
-  html += '</div>';
-  return html;
+var dates = allDatesSorted();
+if (dates.length === 0) {
+return (
+'<div class="list">' +
+'<div class="empty-state">' +
+'<div style="font-size:28px;">🍱</div>' +
+'<div style="margin-top:10px;font-weight:700;">まだ献立がありません</div>' +
+'<div style="margin-top:4px;color:#A98F5C;font-size:13px;">下の「+」ボタンから今日の献立を記録しましょう</div>' +
+'</div>' +
+'</div>'
+);
+}
+var html = '<div class="list">';
+dates.forEach(function (date) {
+var entries = entriesByDate(date);
+html += '<div style="margin-bottom:22px;">';
+html += '<div class="date-header"><span class="date-header-text">' + formatDateLabel(date) + '</span><span class="date-header-sub">' + date + '</span></div>';
+entries.forEach(function (e) { html += renderEntryCard(e); });
+html += '</div>';
+});
+html += '</div>';
+return html;
 }
 
 function renderCalendar() {
-  var withEntries = datesWithEntries();
-  var cells = monthGrid();
-  var today = todayStr();
+var withEntries = datesWithEntries();
+var cells = monthGrid();
+var today = todayStr();
 
-  var html = '<div class="list">';
-  html += '<div class="cal-header">' +
-    '<button class="cal-nav-btn" data-action="prev-month">‹</button>' +
-    '<div class="cal-month-label">' + state.cursorMonth.y + '年' + (state.cursorMonth.m + 1) + '月</div>' +
-    '<button class="cal-nav-btn" data-action="next-month">›</button>' +
-  '</div>';
+var html = '<div class="list">';
+html += '<div class="cal-header">' +
+'<button class="cal-nav-btn" data-action="prev-month">‹</button>' +
+'<div class="cal-month-label">' + state.cursorMonth.y + '年' + (state.cursorMonth.m + 1) + '月</div>' +
+'<button class="cal-nav-btn" data-action="next-month">›</button>' +
+'</div>';
 
-  html += '<div class="weekday-row">';
-  WEEKDAYS.forEach(function (w) { html += '<div class="weekday-cell">' + w + '</div>'; });
-  html += '</div>';
+html += '<div class="weekday-row">';
+WEEKDAYS.forEach(function (w) { html += '<div class="weekday-cell">' + w + '</div>'; });
+html += '</div>';
 
-  html += '<div class="cal-grid">';
-  cells.forEach(function (d) {
-    if (d === null) { html += '<div class="cal-cell-empty"></div>'; return; }
-    var dateStr = ymd(state.cursorMonth.y, state.cursorMonth.m, d);
-    var hasEntry = !!withEntries[dateStr];
-    var isSelected = dateStr === state.selectedDate;
-    var isToday = dateStr === today;
-    var cls = "cal-cell";
-    if (isToday && !isSelected) cls += " today";
-    if (isSelected) cls += " selected";
-    html += '<button class="' + cls + '" data-action="select-date" data-date="' + dateStr + '">' +
-      '<span class="cal-day-num' + (isToday ? " today" : "") + '">' + d + '</span>' +
-      (hasEntry ? '<span class="cal-dot"></span>' : '') +
-    '</button>';
-  });
-  html += '</div>';
+html += '<div class="cal-grid">';
+cells.forEach(function (d) {
+if (d === null) { html += '<div class="cal-cell-empty"></div>'; return; }
+var dateStr = ymd(state.cursorMonth.y, state.cursorMonth.m, d);
+var hasEntry = !!withEntries[dateStr];
+var isSelected = dateStr === state.selectedDate;
+var isToday = dateStr === today;
+var cls = "cal-cell";
+if (isToday && !isSelected) cls += " today";
+if (isSelected) cls += " selected";
+html += '<button class="' + cls + '" data-action="select-date" data-date="' + dateStr + '">' +
+'<span class="cal-day-num' + (isToday ? " today" : "") + '">' + d + '</span>' +
+(hasEntry ? '<span class="cal-dot"></span>' : '') +
+'</button>';
+});
+html += '</div>';
 
-  html += '<div style="margin-top:20px;">';
-  html += '<div class="date-header"><span class="date-header-text">' + formatDateLabel(state.selectedDate) + 'の献立</span><span class="date-header-sub">' + state.selectedDate + '</span></div>';
-  var dayEntries = entriesByDate(state.selectedDate);
-  if (dayEntries.length === 0) {
-    html += '<div class="empty-state" style="padding:30px 20px;"><div style="color:#A98F5C;font-size:13px;">この日はまだ献立がありません</div></div>';
-  } else {
-    dayEntries.forEach(function (e) { html += renderEntryCard(e); });
-  }
-  html += '</div>';
+html += '<div style="margin-top:20px;">';
+html += '<div class="date-header"><span class="date-header-text">' + formatDateLabel(state.selectedDate) + 'の献立</span><span class="date-header-sub">' + state.selectedDate + '</span></div>';
+var dayEntries = entriesByDate(state.selectedDate);
+if (dayEntries.length === 0) {
+html += '<div class="empty-state" style="padding:30px 20px;"><div style="color:#A98F5C;font-size:13px;">この日はまだ献立がありません</div></div>';
+} else {
+dayEntries.forEach(function (e) { html += renderEntryCard(e); });
+}
+html += '</div>';
 
-  html += '</div>';
-  return html;
+html += '</div>';
+return html;
 }
 
 function getGalleryPhotos() {
-  return state.entries.filter(function (e) { return e.photo; })
-    .sort(function (a, b) {
-      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
-      return (b.createdAt || 0) - (a.createdAt || 0);
-    });
+return state.entries.filter(function (e) { return e.photo; })
+.sort(function (a, b) {
+if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+return (b.createdAt || 0) - (a.createdAt || 0);
+});
 }
 
 function renderGallery() {
-  var withPhotos = getGalleryPhotos();
-  if (withPhotos.length === 0) {
-    return (
-      '<div class="list">' +
-        '<div class="empty-state">' +
-          '<div style="font-size:28px;">🖼️</div>' +
-          '<div style="margin-top:10px;font-weight:700;">まだ写真がありません</div>' +
-          '<div style="margin-top:4px;color:#A98F5C;font-size:13px;">献立を記録する時に写真を添えると、ここに並びます</div>' +
-        '</div>' +
-      '</div>'
-    );
-  }
-  var html = '<div class="list"><div class="gallery-grid">';
-  withPhotos.forEach(function (e) {
-    html += '<div class="gallery-item" data-action="view-photo" data-id="' + e.id + '">' +
-      '<img src="' + e.photo + '" alt="" />' +
-      '<div class="gallery-date">' + e.date.slice(5) + '</div>' +
-    '</div>';
-  });
-  html += '</div></div>';
-  return html;
+var withPhotos = getGalleryPhotos();
+if (withPhotos.length === 0) {
+return (
+'<div class="list">' +
+'<div class="empty-state">' +
+'<div style="font-size:28px;">🖼️</div>' +
+'<div style="margin-top:10px;font-weight:700;">まだ写真がありません</div>' +
+'<div style="margin-top:4px;color:#A98F5C;font-size:13px;">献立を記録する時に写真を添えると、ここに並びます</div>' +
+'</div>' +
+'</div>'
+);
+}
+var html = '<div class="list"><div class="gallery-grid">';
+withPhotos.forEach(function (e) {
+html += '<div class="gallery-item" data-action="view-photo" data-id="' + e.id + '">' +
+'<img src="' + e.photo + '" alt="" />' +
+'<div class="gallery-date">' + e.date.slice(5) + '</div>' +
+'</div>';
+});
+html += '</div></div>';
+return html;
+}
+
+function renderRecipes() {
+if (state.recipes.length === 0) {
+return (
+'<div class="list">' +
+'<div class="empty-state">' +
+'<div style="font-size:28px;">🍳</div>' +
+'<div style="margin-top:10px;font-weight:700;">まだレシピがありません</div>' +
+'<div style="margin-top:4px;color:#A98F5C;font-size:13px;">下の「+」ボタンから見つけたレシピを保存しましょう</div>' +
+'</div>' +
+'</div>'
+);
+}
+var html = '<div class="list"><div class="gallery-grid">';
+state.recipes.forEach(function (r) {
+var inner = r.photo ? '<img src="' + r.photo + '" alt="" />' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:26px;">🍳</div>';
+html += '<div>' +
+'<div class="gallery-item" data-action="edit-recipe" data-id="' + r.id + '">' + inner + '</div>' +
+'<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
+'</div>';
+});
+html += '</div></div>';
+return html;
 }
 
 function renderPhotoViewer() {
-  if (state.viewingIndex === null) return "";
-  var photos = getGalleryPhotos();
-  if (photos.length === 0) return "";
-  var idx = Math.max(0, Math.min(state.viewingIndex, photos.length - 1));
-  var entry = photos[idx];
-  var hasPrev = idx > 0;
-  var hasNext = idx < photos.length - 1;
-  return (
-    '<div class="photo-viewer-overlay" data-action="close-viewer" id="photo-viewer">' +
-      '<button class="photo-viewer-close" data-action="close-viewer">✕</button>' +
-      '<div class="photo-viewer-count">' + (idx + 1) + ' / ' + photos.length + '</div>' +
-      (hasPrev ? '<button class="photo-viewer-nav photo-viewer-prev" data-action="prev-photo">‹</button>' : '') +
-      (hasNext ? '<button class="photo-viewer-nav photo-viewer-next" data-action="next-photo">›</button>' : '') +
-      '<img src="' + entry.photo + '" alt="" />' +
-    '</div>'
-  );
+if (state.viewingIndex === null) return "";
+var photos = getGalleryPhotos();
+if (photos.length === 0) return "";
+var idx = Math.max(0, Math.min(state.viewingIndex, photos.length - 1));
+var entry = photos[idx];
+var hasPrev = idx > 0;
+var hasNext = idx < photos.length - 1;
+return (
+'<div class="photo-viewer-overlay" data-action="close-viewer" id="photo-viewer">' +
+'<button class="photo-viewer-close" data-action="close-viewer">✕</button>' +
+'<div class="photo-viewer-count">' + (idx + 1) + ' / ' + photos.length + '</div>' +
+(hasPrev ? '<button class="photo-viewer-nav photo-viewer-prev" data-action="prev-photo">‹</button>' : '') +
+(hasNext ? '<button class="photo-viewer-nav photo-viewer-next" data-action="next-photo">›</button>' : '') +
+'<img src="' + entry.photo + '" alt="" />' +
+'</div>'
+);
 }
 
 function renderModal() {
-  if (!state.showForm) return "";
-  var editing = state.editingId ? state.entries.find(function (e) { return e.id === state.editingId; }) : null;
+if (!state.showForm) return "";
 
-  var suggestButtons = LABEL_SUGGESTIONS.map(function (l) {
-    return '<button type="button" class="label-suggest-btn" data-action="pick-label" data-label="' + escapeHtml(l) + '">' + l + '</button>';
-  }).join("");
+if (state.formMode === "recipe") {
+var editingR = state.editingRecipeId ? state.recipes.find(function (r) { return r.id === state.editingRecipeId; }) : null;
+var previewR = pendingRecipePhotoDataUrl
+? '<div class="photo-preview" id="photo-preview"><img src="' + pendingRecipePhotoDataUrl + '" /></div>'
+: '<div class="photo-preview" id="photo-preview"></div>';
+return (
+'<div class="modal-overlay" data-action="close-modal">' +
+'<form class="modal" id="recipe-form" data-stop="1">' +
+'<div class="modal-header">' +
+'<div class="modal-title">' + (editingR ? "レシピを編集" : "レシピを保存") + '</div>' +
+'<button type="button" class="close-btn" data-action="close-modal">✕</button>' +
+'</div>' +
+'<label class="field-label">レシピ名</label>' +
+'<input class="field-input" id="r-name" placeholder="例：豚バラ大根" value="' + escapeHtml(state.formRecipeName) + '" autocomplete="off" />' +
+'<label class="field-label">写真</label>' +
+'<label class="photo-input-btn">📷 写真を選ぶ・撮る' +
+'<input type="file" accept="image/*" id="r-photo" style="display:none;" />' +
+'</label>' +
+previewR +
+'<label class="field-label">メモ(あれば)</label>' +
+'<textarea class="field-input" id="r-note" placeholder="材料や作り方のメモ、参考にしたアカウントなど">' + escapeHtml(editingR ? editingR.note : "") + '</textarea>' +
+'<button type="submit" class="submit-btn"' + (state.saving ? ' disabled' : '') + '>' + (state.saving ? '保存中…' : '保存する') + '</button>' +
+(editingR ? '<button type="button" class="delete-btn" style="display:block;margin:10px auto 0;color:#C0554E;font-size:12.5px;text-decoration:underline;" data-action="delete-recipe-in-modal">このレシピを削除</button>' : "") +
+'</form>' +
+'</div>'
+);
+}
 
-  var previewHtml = pendingPhotoDataUrl
-    ? '<div class="photo-preview" id="photo-preview"><img src="' + pendingPhotoDataUrl + '" /></div>'
-    : '<div class="photo-preview" id="photo-preview"></div>';
-
-  return (
-    '<div class="modal-overlay" data-action="close-modal">' +
-      '<form class="modal" id="entry-form" data-stop="1">' +
-        '<div class="modal-header">' +
-          '<div class="modal-title">' + (editing ? "編集する" : "献立を記録する") + '</div>' +
-          '<button type="button" class="close-btn" data-action="close-modal">✕</button>' +
-        '</div>' +
-        '<label class="field-label">日付</label>' +
-        '<input class="field-input" style="width:160px;" type="date" id="e-date" value="' + state.formDate + '" />' +
-        '<label class="field-label">見出し</label>' +
-        '<input class="field-input" id="e-label" placeholder="例：朝ごはん、弁当" value="' + escapeHtml(state.formLabel) + '" />' +
-        '<div class="label-suggest-row">' + suggestButtons + '</div>' +
-        '<label class="field-label">内容(1行ずつ箇条書きになります)</label>' +
-        '<textarea class="field-input" id="e-content" placeholder="カツサンド&#10;ブロッコリーと生ハムのサラダ&#10;ヨーグルト">' + escapeHtml(editing ? editing.content : "") + '</textarea>' +
-        '<label class="field-label">写真(あれば)</label>' +
-        '<label class="photo-input-btn">📷 写真を選ぶ・撮る' +
-          '<input type="file" accept="image/*" id="e-photo" style="display:none;" />' +
-        '</label>' +
-        previewHtml +
-        '<button type="submit" class="submit-btn"' + (state.saving ? ' disabled' : '') + '>' + (state.saving ? '保存中…' : '記録する') + '</button>' +
-      '</form>' +
-    '</div>'
-  );
+var editing = state.editingId ? state.entries.find(function (e) { return e.id === state.editingId; }) : null;
+var suggestButtons = LABEL_SUGGESTIONS.map(function (l) {
+return '<button type="button" class="label-suggest-btn" data-action="pick-label" data-label="' + escapeHtml(l) + '">' + l + '</button>';
+}).join("");
+var previewHtml = pendingPhotoDataUrl
+? '<div class="photo-preview" id="photo-preview"><img src="' + pendingPhotoDataUrl + '" /></div>'
+: '<div class="photo-preview" id="photo-preview"></div>';
+return (
+'<div class="modal-overlay" data-action="close-modal">' +
+'<form class="modal" id="entry-form" data-stop="1">' +
+'<div class="modal-header">' +
+'<div class="modal-title">' + (editing ? "編集する" : "献立を記録する") + '</div>' +
+'<button type="button" class="close-btn" data-action="close-modal">✕</button>' +
+'</div>' +
+'<label class="field-label">日付</label>' +
+'<input class="field-input" style="width:160px;" type="date" id="e-date" value="' + state.formDate + '" />' +
+'<label class="field-label">見出し</label>' +
+'<input class="field-input" id="e-label" placeholder="例：朝ごはん、弁当" value="' + escapeHtml(state.formLabel) + '" />' +
+'<div class="label-suggest-row">' + suggestButtons + '</div>' +
+'<label class="field-label">内容(1行ずつ箇条書きになります)</label>' +
+'<textarea class="field-input" id="e-content" placeholder="カツサンド&#10;ブロッコリーと生ハムのサラダ&#10;ヨーグルト">' + escapeHtml(editing ? editing.content : "") + '</textarea>' +
+'<label class="field-label">写真(あれば)</label>' +
+'<label class="photo-input-btn">📷 写真を選ぶ・撮る' +
+'<input type="file" accept="image/*" id="e-photo" style="display:none;" />' +
+'</label>' +
+previewHtml +
+'<button type="submit" class="submit-btn"' + (state.saving ? ' disabled' : '') + '>' + (state.saving ? '保存中…' : '記録する') + '</button>' +
+'</form>' +
+'</div>'
+);
 }
 
 function renderApp() {
-  if (!state.loaded) {
-    return '<div class="header"><div class="header-top"><div class="brand"><div class="brand-mark"><img src="' + ICON_DATA_URI + '" alt="" /></div><div class="brand-text">献立メモ</div></div></div></div>' +
-      '<div class="loading-state">読み込み中...</div>';
-  }
-  var errorHtml = state.error ? '<div class="error-banner">' + escapeHtml(state.error) + '</div>' : "";
-  var savedHtml = state.savedFlash ? '<div class="saved-banner">✓ 保存しました</div>' : "";
-  var body = state.view === "list" ? renderList() : state.view === "calendar" ? renderCalendar() : renderGallery();
-  return (
-    renderHeader() +
-    errorHtml +
-    savedHtml +
-    body +
-    '<button class="fab" data-action="open-form" aria-label="献立を追加">+</button>' +
-    renderModal() +
-    renderPhotoViewer()
-  );
+if (!state.loaded) {
+return '<div class="header"><div class="header-top"><div class="brand"><div class="brand-mark"><img src="' + ICON_DATA_URI + '" alt="" /></div><div class="brand-text">献立メモ</div></div></div></div>' +
+'<div class="loading-state">読み込み中...</div>';
+}
+var errorHtml = state.error ? '<div class="error-banner">' + escapeHtml(state.error) + '</div>' : "";
+var savedHtml = state.savedFlash ? '<div class="saved-banner">✓ 保存しました</div>' : "";
+var body = state.view === "list" ? renderList()
+: state.view === "calendar" ? renderCalendar()
+: state.view === "recipe" ? renderRecipes()
+: renderGallery();
+return (
+renderHeader() +
+errorHtml +
+savedHtml +
+body +
+'<button class="fab" data-action="open-form" aria-label="追加">+</button>' +
+renderModal() +
+renderPhotoViewer()
+);
 }
 
 function render() {
-  document.getElementById("app").innerHTML = renderApp();
-  attachEvents();
+document.getElementById("app").innerHTML = renderApp();
+attachEvents();
 }
 
 function openFormForNew(date) {
-  state.formDate = date || todayStr();
-  state.formLabel = "朝ごはん";
-  state.editingId = null;
-  pendingPhotoDataUrl = null;
-  state.showForm = true;
-  render();
+state.formMode = "entry";
+state.formDate = date || todayStr();
+state.formLabel = "朝ごはん";
+state.editingId = null;
+pendingPhotoDataUrl = null;
+state.showForm = true;
+render();
 }
 function openFormForEdit(id) {
-  var entry = state.entries.find(function (e) { return e.id === id; });
-  if (!entry) return;
-  state.formDate = entry.date;
-  state.formLabel = entry.label;
-  state.editingId = id;
-  pendingPhotoDataUrl = entry.photo || null;
-  state.showForm = true;
-  render();
+var entry = state.entries.find(function (e) { return e.id === id; });
+if (!entry) return;
+state.formMode = "entry";
+state.formDate = entry.date;
+state.formLabel = entry.label;
+state.editingId = id;
+pendingPhotoDataUrl = entry.photo || null;
+state.showForm = true;
+render();
+}
+function openRecipeFormForNew() {
+state.formMode = "recipe";
+state.formRecipeName = "";
+state.editingRecipeId = null;
+pendingRecipePhotoDataUrl = null;
+state.showForm = true;
+render();
+}
+function openRecipeFormForEdit(id) {
+var r = state.recipes.find(function (x) { return x.id === id; });
+if (!r) return;
+state.formMode = "recipe";
+state.formRecipeName = r.name;
+state.editingRecipeId = id;
+pendingRecipePhotoDataUrl = r.photo || null;
+state.showForm = true;
+render();
 }
 
 function attachEvents() {
-  var app = document.getElementById("app");
+var app = document.getElementById("app");
 
-  var exportBtn = app.querySelector('[data-action="export"]');
-  if (exportBtn) exportBtn.addEventListener("click", exportData);
+var exportBtn = app.querySelector('[data-action="export"]');
+if (exportBtn) exportBtn.addEventListener("click", exportData);
 
-  var importInput = app.querySelector("#import-input");
-  if (importInput) {
-    importInput.addEventListener("change", function () {
-      var file = importInput.files && importInput.files[0];
-      if (file) importDataFromFile(file);
-      importInput.value = "";
-    });
-  }
+var importInput = app.querySelector("#import-input");
+if (importInput) {
+importInput.addEventListener("change", function () {
+var file = importInput.files && importInput.files[0];
+if (file) importDataFromFile(file);
+importInput.value = "";
+});
+}
 
-  app.querySelectorAll('[data-action="view"]').forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      state.view = btn.getAttribute("data-view");
-      render();
-    });
-  });
+app.querySelectorAll('[data-action="view"]').forEach(function (btn) {
+btn.addEventListener("click", function () {
+state.view = btn.getAttribute("data-view");
+render();
+});
+});
 
-  app.querySelectorAll('[data-action="delete-entry"]').forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      deleteEntry(btn.getAttribute("data-id"));
-    });
-  });
+app.querySelectorAll('[data-action="delete-entry"]').forEach(function (btn) {
+btn.addEventListener("click", function (e) {
+e.stopPropagation();
+deleteEntry(btn.getAttribute("data-id"));
+});
+});
 
-  app.querySelectorAll('[data-action="edit-entry"]').forEach(function (card) {
-    card.addEventListener("click", function () {
-      openFormForEdit(card.getAttribute("data-id"));
-    });
-  });
+app.querySelectorAll('[data-action="edit-entry"]').forEach(function (card) {
+card.addEventListener("click", function () {
+openFormForEdit(card.getAttribute("data-id"));
+});
+});
 
-  app.querySelectorAll('[data-action="view-photo"]').forEach(function (item) {
-    item.addEventListener("click", function () {
-      var photos = getGalleryPhotos();
-      var idx = photos.findIndex(function (e) { return e.id === item.getAttribute("data-id"); });
-      if (idx >= 0) {
-        state.viewingIndex = idx;
-        render();
-      }
-    });
-  });
+app.querySelectorAll('[data-action="edit-recipe"]').forEach(function (card) {
+card.addEventListener("click", function () {
+openRecipeFormForEdit(card.getAttribute("data-id"));
+});
+});
 
-  app.querySelectorAll('[data-action="close-viewer"]').forEach(function (el) {
-    el.addEventListener("click", function () {
-      state.viewingIndex = null;
-      render();
-    });
-  });
+app.querySelectorAll('[data-action="view-photo"]').forEach(function (item) {
+item.addEventListener("click", function () {
+var photos = getGalleryPhotos();
+var idx = photos.findIndex(function (e) { return e.id === item.getAttribute("data-id"); });
+if (idx >= 0) {
+state.viewingIndex = idx;
+render();
+}
+});
+});
 
-  app.querySelectorAll('[data-action="prev-photo"]').forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      if (state.viewingIndex > 0) {
-        state.viewingIndex -= 1;
-        render();
-      }
-    });
-  });
+app.querySelectorAll('[data-action="close-viewer"]').forEach(function (el) {
+el.addEventListener("click", function () {
+state.viewingIndex = null;
+render();
+});
+});
 
-  app.querySelectorAll('[data-action="next-photo"]').forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var photos = getGalleryPhotos();
-      if (state.viewingIndex < photos.length - 1) {
-        state.viewingIndex += 1;
-        render();
-      }
-    });
-  });
+app.querySelectorAll('[data-action="prev-photo"]').forEach(function (btn) {
+btn.addEventListener("click", function (e) {
+e.stopPropagation();
+if (state.viewingIndex > 0) {
+state.viewingIndex -= 1;
+render();
+}
+});
+});
 
-  var photoViewer = document.getElementById("photo-viewer");
-  if (photoViewer) {
-    var touchStartX = null;
-    photoViewer.addEventListener("touchstart", function (e) {
-      touchStartX = e.touches[0].clientX;
-    });
-    photoViewer.addEventListener("touchend", function (e) {
-      if (touchStartX === null) return;
-      var dx = e.changedTouches[0].clientX - touchStartX;
-      touchStartX = null;
-      var threshold = 40;
-      if (dx > threshold) {
-        if (state.viewingIndex > 0) {
-          state.viewingIndex -= 1;
-          render();
-        }
-      } else if (dx < -threshold) {
-        var photos = getGalleryPhotos();
-        if (state.viewingIndex < photos.length - 1) {
-          state.viewingIndex += 1;
-          render();
-        }
-      }
-    });
-  }
+app.querySelectorAll('[data-action="next-photo"]').forEach(function (btn) {
+btn.addEventListener("click", function (e) {
+e.stopPropagation();
+var photos = getGalleryPhotos();
+if (state.viewingIndex < photos.length - 1) {
+state.viewingIndex += 1;
+render();
+}
+});
+});
 
-  var prevBtn = app.querySelector('[data-action="prev-month"]');
-  if (prevBtn) prevBtn.addEventListener("click", function () { changeMonth(-1); });
-  var nextBtn = app.querySelector('[data-action="next-month"]');
-  if (nextBtn) nextBtn.addEventListener("click", function () { changeMonth(1); });
+var photoViewer = document.getElementById("photo-viewer");
+if (photoViewer) {
+var touchStartX = null;
+photoViewer.addEventListener("touchstart", function (e) {
+touchStartX = e.touches[0].clientX;
+});
+photoViewer.addEventListener("touchend", function (e) {
+if (touchStartX === null) return;
+var dx = e.changedTouches[0].clientX - touchStartX;
+touchStartX = null;
+var threshold = 40;
+if (dx > threshold) {
+if (state.viewingIndex > 0) {
+state.viewingIndex -= 1;
+render();
+}
+} else if (dx < -threshold) {
+var photos = getGalleryPhotos();
+if (state.viewingIndex < photos.length - 1) {
+state.viewingIndex += 1;
+render();
+}
+}
+});
+}
 
-  app.querySelectorAll('[data-action="select-date"]').forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      state.selectedDate = btn.getAttribute("data-date");
-      render();
-    });
-  });
+var prevBtn = app.querySelector('[data-action="prev-month"]');
+if (prevBtn) prevBtn.addEventListener("click", function () { changeMonth(-1); });
+var nextBtn = app.querySelector('[data-action="next-month"]');
+if (nextBtn) nextBtn.addEventListener("click", function () { changeMonth(1); });
 
-  app.querySelectorAll('[data-action="pick-label"]').forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var labelInput = document.getElementById("e-label");
-      if (labelInput) labelInput.value = btn.getAttribute("data-label");
-    });
-  });
+app.querySelectorAll('[data-action="select-date"]').forEach(function (btn) {
+btn.addEventListener("click", function () {
+state.selectedDate = btn.getAttribute("data-date");
+render();
+});
+});
 
-  var photoInput = app.querySelector("#e-photo");
-  if (photoInput) {
-    photoInput.addEventListener("change", function () {
-      var file = photoInput.files && photoInput.files[0];
-      if (!file) return;
-      resizeImageFile(file, function (dataUrl) {
-        pendingPhotoDataUrl = dataUrl;
-        var preview = document.getElementById("photo-preview");
-        if (preview) preview.innerHTML = '<img src="' + dataUrl + '" />';
-      });
-    });
-  }
+app.querySelectorAll('[data-action="pick-label"]').forEach(function (btn) {
+btn.addEventListener("click", function () {
+var labelInput = document.getElementById("e-label");
+if (labelInput) labelInput.value = btn.getAttribute("data-label");
+});
+});
 
-  var fab = app.querySelector('[data-action="open-form"]');
-  if (fab) {
-    fab.addEventListener("click", function () {
-      openFormForNew(state.view === "calendar" ? state.selectedDate : todayStr());
-    });
-  }
+var photoInput = app.querySelector("#e-photo");
+if (photoInput) {
+photoInput.addEventListener("change", function () {
+var file = photoInput.files && photoInput.files[0];
+if (!file) return;
+resizeImageFile(file, function (dataUrl) {
+pendingPhotoDataUrl = dataUrl;
+var preview = document.getElementById("photo-preview");
+if (preview) preview.innerHTML = '<img src="' + dataUrl + '" />';
+});
+});
+}
 
-  app.querySelectorAll('[data-action="close-modal"]').forEach(function (el) {
-    el.addEventListener("click", function (e) {
-      if (e.target.getAttribute("data-action") === "close-modal") {
-        state.showForm = false;
-        state.editingId = null;
-        render();
-      }
-    });
-  });
+var recipePhotoInput = app.querySelector("#r-photo");
+if (recipePhotoInput) {
+recipePhotoInput.addEventListener("change", function () {
+var file = recipePhotoInput.files && recipePhotoInput.files[0];
+if (!file) return;
+resizeImageFile(file, function (dataUrl) {
+pendingRecipePhotoDataUrl = dataUrl;
+var preview = document.getElementById("photo-preview");
+if (preview) preview.innerHTML = '<img src="' + dataUrl + '" />';
+});
+});
+}
 
-  var modalInner = app.querySelector('[data-stop="1"]');
-  if (modalInner) {
-    modalInner.addEventListener("click", function (e) { e.stopPropagation(); });
-  }
+var deleteRecipeBtn = app.querySelector('[data-action="delete-recipe-in-modal"]');
+if (deleteRecipeBtn) {
+deleteRecipeBtn.addEventListener("click", function () {
+var id = state.editingRecipeId;
+state.showForm = false;
+state.editingRecipeId = null;
+deleteRecipe(id);
+});
+}
 
-  var form = document.getElementById("entry-form");
-  if (form) {
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (state.saving) return;
-      var eDate = document.getElementById("e-date").value || todayStr();
-      var eLabel = document.getElementById("e-label").value.trim() || "メモ";
-      var eContent = document.getElementById("e-content").value;
-      if (!eContent.trim() && !pendingPhotoDataUrl) return;
-      saveEntry(eDate, eLabel, eContent, pendingPhotoDataUrl, state.editingId);
-    });
-  }
+var fab = app.querySelector('[data-action="open-form"]');
+if (fab) {
+fab.addEventListener("click", function () {
+if (state.view === "recipe") {
+openRecipeFormForNew();
+} else {
+openFormForNew(state.view === "calendar" ? state.selectedDate : todayStr());
+}
+});
+}
+
+app.querySelectorAll('[data-action="close-modal"]').forEach(function (el) {
+el.addEventListener("click", function (e) {
+if (e.target.getAttribute("data-action") === "close-modal") {
+state.showForm = false;
+state.editingId = null;
+state.editingRecipeId = null;
+render();
+}
+});
+});
+
+var modalInner = app.querySelector('[data-stop="1"]');
+if (modalInner) {
+modalInner.addEventListener("click", function (e) { e.stopPropagation(); });
+}
+
+var form = document.getElementById("entry-form");
+if (form) {
+form.addEventListener("submit", function (e) {
+e.preventDefault();
+if (state.saving) return;
+var eDate = document.getElementById("e-date").value || todayStr();
+var eLabel = document.getElementById("e-label").value.trim() || "メモ";
+var eContent = document.getElementById("e-content").value;
+if (!eContent.trim() && !pendingPhotoDataUrl) return;
+saveEntry(eDate, eLabel, eContent, pendingPhotoDataUrl, state.editingId);
+});
+}
+
+var recipeForm = document.getElementById("recipe-form");
+if (recipeForm) {
+recipeForm.addEventListener("submit", function (e) {
+e.preventDefault();
+if (state.saving) return;
+var rName = document.getElementById("r-name").value.trim();
+var rNote = document.getElementById("r-note").value;
+if (!rName) return;
+saveRecipe(rName, pendingRecipePhotoDataUrl, rNote, state.editingRecipeId);
+});
+}
 }
 
 // ---------- init ----------
 render();
 (async function init() {
-  try {
-    state.entries = await loadJSON("kondate-entries", []);
-  } catch (e) {
-    state.error = "データの読み込みに失敗しました。";
-  } finally {
-    state.loaded = true;
-    render();
-  }
+try {
+state.entries = await loadJSON("kondate-entries", []);
+state.recipes = await loadJSON("kondate-recipes", []);
+} catch (e) {
+state.error = "データの読み込みに失敗しました。";
+} finally {
+state.loaded = true;
+render();
+}
 })();
 </script>
 </body>
