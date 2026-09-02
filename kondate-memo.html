@@ -185,6 +185,8 @@ formMode: "entry",
 formDate: todayStr(),
 formLabel: "朝ごはん",
 formRecipeName: "",
+formRecipeType: "photo",
+formRecipeLink: "",
 editingId: null,
 editingRecipeId: null,
 error: null,
@@ -252,16 +254,18 @@ render();
 await persistEntries();
 }
 
-async function saveRecipe(name, photo, note, editingId) {
+async function saveRecipe(type, name, photo, link, note, editingId) {
 if (editingId) {
 var existing = state.recipes.find(function (r) { return r.id === editingId; });
 if (existing) {
+existing.type = type;
 existing.name = name;
 existing.photo = photo || null;
+existing.link = link || "";
 existing.note = note || "";
 }
 } else {
-state.recipes.unshift({ id: uid(), createdAt: Date.now(), name: name, photo: photo || null, note: note || "" });
+state.recipes.unshift({ id: uid(), createdAt: Date.now(), type: type, name: name, photo: photo || null, link: link || "", note: note || "" });
 }
 state.saving = true;
 render();
@@ -518,6 +522,20 @@ html += '</div></div>';
 return html;
 }
 
+function renderRecipeGroup(list) {
+var html = '<div class="gallery-grid">';
+list.forEach(function (r) {
+var inner = r.photo ? '<img src="' + r.photo + '" alt="" />' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:26px;">' + (r.type === "video" ? "🎥" : "🍳") + '</div>';
+var badge = r.type === "video" ? '<div style="position:absolute;top:4px;right:4px;background:rgba(74,44,58,0.6);color:#fff;font-size:11px;padding:2px 5px;border-radius:6px;">🎥</div>' : '';
+html += '<div>' +
+'<div class="gallery-item" style="position:relative;" data-action="edit-recipe" data-id="' + r.id + '">' + inner + badge + '</div>' +
+'<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
+'</div>';
+});
+html += '</div>';
+return html;
+}
+
 function renderRecipes() {
 if (state.recipes.length === 0) {
 return (
@@ -530,15 +548,18 @@ return (
 '</div>'
 );
 }
-var html = '<div class="list"><div class="gallery-grid">';
-state.recipes.forEach(function (r) {
-var inner = r.photo ? '<img src="' + r.photo + '" alt="" />' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:26px;">🍳</div>';
-html += '<div>' +
-'<div class="gallery-item" data-action="edit-recipe" data-id="' + r.id + '">' + inner + '</div>' +
-'<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
-'</div>';
-});
-html += '</div></div>';
+var photoRecipes = state.recipes.filter(function (r) { return r.type !== "video"; });
+var videoRecipes = state.recipes.filter(function (r) { return r.type === "video"; });
+var html = '<div class="list">';
+if (photoRecipes.length > 0) {
+html += '<div class="date-header"><span class="date-header-text">📷 写真レシピ</span></div>';
+html += renderRecipeGroup(photoRecipes);
+}
+if (videoRecipes.length > 0) {
+html += '<div class="date-header" style="margin-top:20px;"><span class="date-header-text">🎥 動画レシピ</span></div>';
+html += renderRecipeGroup(videoRecipes);
+}
+html += '</div>';
 return html;
 }
 
@@ -576,13 +597,25 @@ return (
 '<div class="modal-title">' + (editingR ? "レシピを編集" : "レシピを保存") + '</div>' +
 '<button type="button" class="close-btn" data-action="close-modal">✕</button>' +
 '</div>' +
+'<label class="field-label">種類</label>' +
+'<div class="label-suggest-row">' +
+'<button type="button" class="label-suggest-btn" style="' + (state.formRecipeType === "photo" ? "background:var(--pink);color:#fff;border-color:var(--pink);" : "") + '" data-action="pick-recipe-type" data-type="photo">📷 写真</button>' +
+'<button type="button" class="label-suggest-btn" style="' + (state.formRecipeType === "video" ? "background:var(--pink);color:#fff;border-color:var(--pink);" : "") + '" data-action="pick-recipe-type" data-type="video">🎥 動画</button>' +
+'</div>' +
 '<label class="field-label">レシピ名</label>' +
 '<input class="field-input" id="r-name" placeholder="例：豚バラ大根" value="' + escapeHtml(state.formRecipeName) + '" autocomplete="off" />' +
-'<label class="field-label">写真</label>' +
+(state.formRecipeType === "video"
+? ('<label class="field-label">動画のリンク(TikTokなど)</label>' +
+'<input class="field-input" id="r-link" type="url" placeholder="https://www.tiktok.com/..." value="' + escapeHtml(state.formRecipeLink) + '" autocomplete="off" />' +
+'<label class="field-label">サムネイル写真(あれば)</label>')
+: '<label class="field-label">写真</label>') +
 '<label class="photo-input-btn">📷 写真を選ぶ・撮る' +
 '<input type="file" accept="image/*" id="r-photo" style="display:none;" />' +
 '</label>' +
 previewR +
+(editingR && editingR.type === "video" && editingR.link
+? '<a href="' + escapeHtml(editingR.link) + '" target="_blank" rel="noopener" class="photo-input-btn" style="display:block;text-align:center;text-decoration:none;margin-top:10px;">▶ 動画を開く</a>'
+: '') +
 '<label class="field-label">メモ(あれば)</label>' +
 '<textarea class="field-input" id="r-note" placeholder="材料や作り方のメモ、参考にしたアカウントなど">' + escapeHtml(editingR ? editingR.note : "") + '</textarea>' +
 '<button type="submit" class="submit-btn"' + (state.saving ? ' disabled' : '') + '>' + (state.saving ? '保存中…' : '保存する') + '</button>' +
@@ -674,6 +707,8 @@ render();
 function openRecipeFormForNew() {
 state.formMode = "recipe";
 state.formRecipeName = "";
+state.formRecipeType = "photo";
+state.formRecipeLink = "";
 state.editingRecipeId = null;
 pendingRecipePhotoDataUrl = null;
 state.showForm = true;
@@ -684,6 +719,8 @@ var r = state.recipes.find(function (x) { return x.id === id; });
 if (!r) return;
 state.formMode = "recipe";
 state.formRecipeName = r.name;
+state.formRecipeType = r.type || "photo";
+state.formRecipeLink = r.link || "";
 state.editingRecipeId = id;
 pendingRecipePhotoDataUrl = r.photo || null;
 state.showForm = true;
@@ -841,6 +878,17 @@ if (preview) preview.innerHTML = '<img src="' + dataUrl + '" />';
 });
 }
 
+app.querySelectorAll('[data-action="pick-recipe-type"]').forEach(function (btn) {
+btn.addEventListener("click", function () {
+state.formRecipeType = btn.getAttribute("data-type");
+var nameInput = document.getElementById("r-name");
+if (nameInput) state.formRecipeName = nameInput.value;
+var linkInput = document.getElementById("r-link");
+if (linkInput) state.formRecipeLink = linkInput.value;
+render();
+});
+});
+
 var deleteRecipeBtn = app.querySelector('[data-action="delete-recipe-in-modal"]');
 if (deleteRecipeBtn) {
 deleteRecipeBtn.addEventListener("click", function () {
@@ -898,8 +946,11 @@ e.preventDefault();
 if (state.saving) return;
 var rName = document.getElementById("r-name").value.trim();
 var rNote = document.getElementById("r-note").value;
+var rLinkInput = document.getElementById("r-link");
+var rLink = rLinkInput ? rLinkInput.value.trim() : "";
 if (!rName) return;
-saveRecipe(rName, pendingRecipePhotoDataUrl, rNote, state.editingRecipeId);
+if (state.formRecipeType === "video" && !rLink) return;
+saveRecipe(state.formRecipeType, rName, pendingRecipePhotoDataUrl, rLink, rNote, state.editingRecipeId);
 });
 }
 }
