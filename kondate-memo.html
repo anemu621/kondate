@@ -192,7 +192,8 @@ editingRecipeId: null,
 error: null,
 saving: false,
 savedFlash: false,
-viewingIndex: null
+viewingIndex: null,
+viewingRecipeIndex: null
 };
 var pendingPhotoDataUrl = null;
 var pendingRecipePhotoDataUrl = null;
@@ -527,9 +528,10 @@ var html = '<div class="gallery-grid">';
 list.forEach(function (r) {
 var inner = r.photo ? '<img src="' + r.photo + '" alt="" />' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:26px;">' + (r.type === "video" ? "🎥" : "🍳") + '</div>';
 var badge = r.type === "video" ? '<div style="position:absolute;top:4px;right:4px;background:rgba(74,44,58,0.6);color:#fff;font-size:11px;padding:2px 5px;border-radius:6px;">🎥</div>' : '';
+var thumbAction = r.type === "video" ? 'data-action="open-recipe-video"' : 'data-action="view-recipe-photo"';
 html += '<div>' +
-'<div class="gallery-item" style="position:relative;" data-action="edit-recipe" data-id="' + r.id + '">' + inner + badge + '</div>' +
-'<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
+'<div class="gallery-item" style="position:relative;" ' + thumbAction + ' data-id="' + r.id + '">' + inner + badge + '</div>' +
+'<div class="recipe-name" data-action="edit-recipe" data-id="' + r.id + '" style="cursor:pointer;">' + escapeHtml(r.name) + '</div>' +
 '</div>';
 });
 html += '</div>';
@@ -577,6 +579,29 @@ return (
 '<div class="photo-viewer-count">' + (idx + 1) + ' / ' + photos.length + '</div>' +
 (hasPrev ? '<button class="photo-viewer-nav photo-viewer-prev" data-action="prev-photo">‹</button>' : '') +
 (hasNext ? '<button class="photo-viewer-nav photo-viewer-next" data-action="next-photo">›</button>' : '') +
+'<img src="' + entry.photo + '" alt="" />' +
+'</div>'
+);
+}
+
+function getRecipePhotos() {
+return state.recipes.filter(function (r) { return r.type !== "video" && r.photo; });
+}
+
+function renderRecipePhotoViewer() {
+if (state.viewingRecipeIndex === null) return "";
+var photos = getRecipePhotos();
+if (photos.length === 0) return "";
+var idx = Math.max(0, Math.min(state.viewingRecipeIndex, photos.length - 1));
+var entry = photos[idx];
+var hasPrev = idx > 0;
+var hasNext = idx < photos.length - 1;
+return (
+'<div class="photo-viewer-overlay" data-action="close-recipe-viewer" id="recipe-photo-viewer">' +
+'<button class="photo-viewer-close" data-action="close-recipe-viewer">✕</button>' +
+'<div class="photo-viewer-count">' + (idx + 1) + ' / ' + photos.length + '</div>' +
+(hasPrev ? '<button class="photo-viewer-nav photo-viewer-prev" data-action="prev-recipe-photo">‹</button>' : '') +
+(hasNext ? '<button class="photo-viewer-nav photo-viewer-next" data-action="next-recipe-photo">›</button>' : '') +
 '<img src="' + entry.photo + '" alt="" />' +
 '</div>'
 );
@@ -675,7 +700,8 @@ savedHtml +
 body +
 '<button class="fab" data-action="open-form" aria-label="追加">+</button>' +
 renderModal() +
-renderPhotoViewer()
+renderPhotoViewer() +
+renderRecipePhotoViewer()
 );
 }
 
@@ -767,6 +793,73 @@ card.addEventListener("click", function () {
 openRecipeFormForEdit(card.getAttribute("data-id"));
 });
 });
+
+app.querySelectorAll('[data-action="view-recipe-photo"]').forEach(function (item) {
+item.addEventListener("click", function () {
+var photos = getRecipePhotos();
+var idx = photos.findIndex(function (r) { return r.id === item.getAttribute("data-id"); });
+if (idx >= 0) {
+state.viewingRecipeIndex = idx;
+render();
+}
+});
+});
+
+app.querySelectorAll('[data-action="open-recipe-video"]').forEach(function (item) {
+item.addEventListener("click", function () {
+var r = state.recipes.find(function (x) { return x.id === item.getAttribute("data-id"); });
+if (r && r.link) {
+var a = document.createElement("a");
+a.href = r.link;
+a.target = "_blank";
+a.rel = "noopener";
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+}
+});
+});
+
+app.querySelectorAll('[data-action="close-recipe-viewer"]').forEach(function (el) {
+el.addEventListener("click", function (e) {
+if (e.target.getAttribute("data-action") === "close-recipe-viewer") {
+state.viewingRecipeIndex = null;
+render();
+}
+});
+});
+
+app.querySelectorAll('[data-action="prev-recipe-photo"]').forEach(function (btn) {
+btn.addEventListener("click", function (e) {
+e.stopPropagation();
+if (state.viewingRecipeIndex > 0) { state.viewingRecipeIndex -= 1; render(); }
+});
+});
+app.querySelectorAll('[data-action="next-recipe-photo"]').forEach(function (btn) {
+btn.addEventListener("click", function (e) {
+e.stopPropagation();
+var photos = getRecipePhotos();
+if (state.viewingRecipeIndex < photos.length - 1) { state.viewingRecipeIndex += 1; render(); }
+});
+});
+
+var recipePhotoViewer = document.getElementById("recipe-photo-viewer");
+if (recipePhotoViewer) {
+var rvTouchStartX = null;
+recipePhotoViewer.addEventListener("touchstart", function (e) { rvTouchStartX = e.touches[0].clientX; });
+recipePhotoViewer.addEventListener("touchend", function (e) {
+if (rvTouchStartX === null) return;
+var dx = e.changedTouches[0].clientX - rvTouchStartX;
+rvTouchStartX = null;
+var threshold = 40;
+var photos = getRecipePhotos();
+if (dx > threshold) {
+if (state.viewingRecipeIndex > 0) { state.viewingRecipeIndex -= 1; render(); }
+} else if (dx < -threshold) {
+if (state.viewingRecipeIndex < photos.length - 1) { state.viewingRecipeIndex += 1; render(); }
+}
+});
+}
 
 app.querySelectorAll('[data-action="view-photo"]').forEach(function (item) {
 item.addEventListener("click", function () {
