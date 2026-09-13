@@ -110,7 +110,7 @@ label.field-label { font-size: 11.5px; color: #A98F5C; margin-top: 10px; margin-
 .field-input { width: 100%; background: #FFFBF0; border: 1px solid #F0DDA8;
 border-radius: 8px; padding: 10px 12px; color: #4A2C3A; font-size: 14px; font-family: inherit; }
 .field-input:focus { outline: none; border-color: var(--pink) !important; }
-textarea.field-input { resize: vertical; min-height: 110px; }
+textarea.field-input { resize: vertical; min-height: 110px; overflow: hidden; }
 .submit-btn { margin-top: 18px; background: var(--pink); color: #fff; border:
 none; border-radius: 10px; padding: 13px 0; font-size: 15px; font-weight: 700;
 cursor: pointer; width: 100%; font-family: inherit; }
@@ -1005,6 +1005,15 @@ var labelInput = document.getElementById("e-label");
 if (labelInput) labelInput.value = btn.getAttribute("data-label");
 });
 });
+var contentTextarea = document.getElementById("e-content");
+if (contentTextarea) {
+var autoGrow = function () {
+contentTextarea.style.height = "auto";
+contentTextarea.style.height = (contentTextarea.scrollHeight + 2) + "px";
+};
+autoGrow();
+contentTextarea.addEventListener("input", autoGrow);
+}
 var photoInput = app.querySelector("#e-photo");
 if (photoInput) {
 photoInput.addEventListener("change", function () {
