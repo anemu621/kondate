@@ -101,7 +101,7 @@ inherit; padding: 4px 2px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(74,44,58,0.4);
 display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
 .modal { background: #fff; border-top: 1px solid #F5E8C8; border-radius: 16px16px 0 0; width: 100%; max-width: 480px; padding: 18px 18px 24px; display: flex;
-flex-direction: column; gap: 4px; max-height: 88vh; overflow-y: auto; }
+flex-direction: column; gap: 4px; max-height: 88vh; max-height: 88dvh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items:
 center; margin-bottom: 10px; }
 .modal-title { font-size: 17px; font-weight: 700; color: #4A2C3A; }
@@ -824,6 +824,16 @@ render();
 }
 function attachEvents() {
 var app = document.getElementById("app");
+var modalForFocus = app.querySelector(".modal");
+if (modalForFocus) {
+modalForFocus.querySelectorAll(".field-input").forEach(function (el) {
+el.addEventListener("focus", function () {
+setTimeout(function () {
+el.scrollIntoView({ block: "center", behavior: "smooth" });
+}, 300);
+});
+});
+}
 var exportBtn = app.querySelector('[data-action="export"]');
 if (exportBtn) exportBtn.addEventListener("click", exportData);
 var importInput = app.querySelector("#import-input");
