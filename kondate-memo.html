@@ -62,6 +62,7 @@ padding: 12px 14px 4px; }
 .card-label { font-size: 14px; font-weight: 700; color: var(--pink-dark); }
 .delete-btn { background: none; border: none; padding: 4px; cursor: pointer;
 border-radius: 6px; line-height: 1; font-size: 14px; flex-shrink: 0; }
+.recipe-delete-btn { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(74,44,58,0.55); color: #fff; border: none; font-size: 12px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
 .bullet-list { padding: 4px 14px 12px; margin: 0; list-style: none; }
 .bullet-list li { position: relative; padding-left: 16px; font-size: 13.5px;
 color: #4A2C3A; line-height: 1.7; }
@@ -584,8 +585,9 @@ var inner = r.photo ? '<img src="' + r.photo + '" alt="" />' : '<div style="disp
 " " : " ") + '</div>';
 var badge = r.type === "video" ? '<div style="position:absolute;top:4px;right:4px;background:rgba(74,44,58,0.6);color:#f ff;font-size:11px;padding:2px 5px;border-radius:6px;"> </div>' : '';
 var thumbAction = r.type === "video" ? 'data-action="open-recipe-video"' : 'data-action="view-recipe-photo"';
+var deleteBtn = '<button type="button" class="recipe-delete-btn" data-action="delete-recipe-card" data-id="' + r.id + '">✕</button>';
 html += '<div>' +
-'<div class="gallery-item" style="position:relative;" ' + thumbAction + ' data-id="' + r.id + '">' + inner + badge + '</div>' +
+'<div class="gallery-item" style="position:relative;" ' + thumbAction + ' data-id="' + r.id + '">' + inner + badge + deleteBtn + '</div>' +
 '<div class="recipe-name" data-action="edit-recipe" data-id="' + r.id + '" style="cursor:pointer;">' + escapeHtml(r.name) + '</div>' +
 '</div>';
 });
@@ -864,6 +866,15 @@ openFormForEdit(card.getAttribute("data-id"));
 app.querySelectorAll('[data-action="edit-recipe"]').forEach(function (card) {
 card.addEventListener("click", function () {
 openRecipeFormForEdit(card.getAttribute("data-id"));
+});
+});
+app.querySelectorAll('[data-action="delete-recipe-card"]').forEach(function (btn) {
+btn.addEventListener("click", function (e) {
+e.stopPropagation();
+var id = btn.getAttribute("data-id");
+if (confirm("このレシピを削除しますか?")) {
+deleteRecipe(id);
+}
 });
 });
 app.querySelectorAll('[data-action="view-recipe-photo"]').forEach(function (item)
