@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="献立メモ" />
@@ -102,7 +102,7 @@ inherit; padding: 4px 2px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(74,44,58,0.4);
 display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
 .modal { background: #fff; border-top: 1px solid #F5E8C8; border-radius: 16px16px 0 0; width: 100%; max-width: 480px; padding: 18px 18px 24px; display: flex;
-flex-direction: column; gap: 4px; max-height: 88vh; max-height: 88dvh; overflow-y: auto; }
+flex-direction: column; gap: 4px; max-height: 90%; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items:
 center; margin-bottom: 10px; }
 .modal-title { font-size: 17px; font-weight: 700; color: #4A2C3A; }
@@ -781,6 +781,7 @@ renderRecipePhotoViewer()
 function render() {
 document.getElementById("app").innerHTML = renderApp();
 attachEvents();
+fitOverlayToVisualViewport();
 }
 function openFormForNew(date) {
 state.formMode = "entry";
@@ -835,10 +836,18 @@ currentFocusedField = el;
 scrollFocusedFieldIntoView();
 setTimeout(scrollFocusedFieldIntoView, 350);
 }
+function fitOverlayToVisualViewport() {
+var overlay = document.querySelector(".modal-overlay");
+if (!overlay || !window.visualViewport) return;
+overlay.style.height = window.visualViewport.height + "px";
+overlay.style.top = window.visualViewport.offsetTop + "px";
+}
 if (window.visualViewport) {
 window.visualViewport.addEventListener("resize", function () {
+fitOverlayToVisualViewport();
 setTimeout(scrollFocusedFieldIntoView, 50);
 });
+window.visualViewport.addEventListener("scroll", fitOverlayToVisualViewport);
 }
 function attachEvents() {
 var app = document.getElementById("app");
