@@ -824,15 +824,29 @@ pendingRecipePhotoDataUrl = r.photo || null;
 state.showForm = true;
 render();
 }
+var currentFocusedField = null;
+function scrollFocusedFieldIntoView() {
+if (currentFocusedField && document.body.contains(currentFocusedField)) {
+currentFocusedField.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+}
+function scheduleScrollToFocused(el) {
+currentFocusedField = el;
+scrollFocusedFieldIntoView();
+setTimeout(scrollFocusedFieldIntoView, 350);
+}
+if (window.visualViewport) {
+window.visualViewport.addEventListener("resize", function () {
+setTimeout(scrollFocusedFieldIntoView, 50);
+});
+}
 function attachEvents() {
 var app = document.getElementById("app");
 var modalForFocus = app.querySelector(".modal");
 if (modalForFocus) {
 modalForFocus.querySelectorAll(".field-input").forEach(function (el) {
 el.addEventListener("focus", function () {
-setTimeout(function () {
-el.scrollIntoView({ block: "center", behavior: "smooth" });
-}, 300);
+scheduleScrollToFocused(el);
 });
 });
 }
