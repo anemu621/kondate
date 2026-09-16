@@ -61,7 +61,7 @@ flex; flex-direction: column; align-items: center; }
 padding: 12px 14px 4px; }
 .card-label { font-size: 14px; font-weight: 700; color: var(--pink-dark); }
 .delete-btn { background: none; border: none; padding: 4px; cursor: pointer;
-border-radius: 6px; line-height: 1; font-size: 14px; flex-shrink: 0; }
+border-radius: 6px; line-height: 1; font-size: 14px; flex-shrink: 0; color: #C0554E; }
 .recipe-delete-btn { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(74,44,58,0.55); color: #fff; border: none; font-size: 12px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
 .bullet-list { padding: 4px 14px 12px; margin: 0; list-style: none; }
 .bullet-list li { position: relative; padding-left: 16px; font-size: 13.5px;
@@ -440,7 +440,7 @@ return (
 '<div class="card" data-action="edit-entry" data-id="' + entry.id + '">' +
 '<div class="card-top">' +
 '<div class="card-label">' + escapeHtml(entry.label || "メモ") + '</div>' +
-'<button class="delete-btn" data-action="delete-entry" data-id="' + entry.id + '" aria-label="削除"> </button>' +
+'<button class="delete-btn" data-action="delete-entry" data-id="' + entry.id + '" aria-label="削除">✕</button>' +
 '</div>' +
 listHtml +
 photoHtml +
@@ -881,7 +881,9 @@ render();
 app.querySelectorAll('[data-action="delete-entry"]').forEach(function (btn) {
 btn.addEventListener("click", function (e) {
 e.stopPropagation();
+if (confirm("この記録を削除しますか?")) {
 deleteEntry(btn.getAttribute("data-id"));
+}
 });
 });
 app.querySelectorAll('[data-action="edit-entry"]').forEach(function (card) {
