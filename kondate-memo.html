@@ -173,17 +173,83 @@ favicon.href = ICON_DATA_URI;
 document.head.appendChild(favicon);
 })();
 // ---------- storage helpers ----------
+// Uses IndexedDB instead of localStorage: localStorage caps out around
+// 5-10MB per site, which fills up fast once photos pile up. IndexedDB
+// gives far more room (typically a large share of free disk space), so
+// photo-heavy records stop hitting "quota exceeded" errors.
+var DB_NAME = "kondate-db";
+var DB_VERSION = 1;
+var STORE_NAME = "kv";
+var dbPromise = null;
+function openDB() {
+if (dbPromise) return dbPromise;
+dbPromise = new Promise(function (resolve, reject) {
+if (!window.indexedDB) {
+reject(new Error("indexeddb-unsupported"));
+return;
+}
+var req = indexedDB.open(DB_NAME, DB_VERSION);
+req.onupgradeneeded = function () {
+var db = req.result;
+if (!db.objectStoreNames.contains(STORE_NAME)) {
+db.createObjectStore(STORE_NAME);
+}
+};
+req.onsuccess = function () { resolve(req.result); };
+req.onerror = function () { reject(req.error); };
+});
+return dbPromise;
+}
+function idbGet(key) {
+return openDB().then(function (db) {
+return new Promise(function (resolve, reject) {
+var tx = db.transaction(STORE_NAME, "readonly");
+var store = tx.objectStore(STORE_NAME);
+var req = store.get(key);
+req.onsuccess = function () { resolve(req.result); };
+req.onerror = function () { reject(req.error); };
+});
+});
+}
+function idbSet(key, value) {
+return openDB().then(function (db) {
+return new Promise(function (resolve, reject) {
+var tx = db.transaction(STORE_NAME, "readwrite");
+tx.objectStore(STORE_NAME).put(value, key);
+tx.oncomplete = function () { resolve(); };
+tx.onerror = function () { reject(tx.error); };
+tx.onabort = function () { reject(tx.error); };
+});
+});
+}
+// One-time migration: older versions of this app stored data in
+// localStorage. Copy anything found there into IndexedDB on first run so
+// existing records (and their photos) aren't lost, then stop touching
+// localStorage for this key.
 async function loadJSON(key, fallback) {
 try {
-var raw = localStorage.getItem(key);
-return raw ? JSON.parse(raw) : fallback;
-} catch (e) {
+var fromIdb = await idbGet(key);
+if (fromIdb !== undefined) return fromIdb;
+var raw = null;
+try { raw = localStorage.getItem(key); } catch (e) { raw = null; }
+if (raw) {
+var parsed = JSON.parse(raw);
+try { await idbSet(key, parsed); } catch (e) {}
+return parsed;
+}
 return fallback;
+} catch (e) {
+try {
+var rawFallback = localStorage.getItem(key);
+return rawFallback ? JSON.parse(rawFallback) : fallback;
+} catch (e2) {
+return fallback;
+}
 }
 }
 async function saveJSON(key, value) {
 try {
-localStorage.setItem(key, JSON.stringify(value));
+await idbSet(key, value);
 return { ok: true };
 } catch (e) {
 return { ok: false, error: (e && (e.message || e.toString())) || "unknown-error"
@@ -251,15 +317,15 @@ viewingRecipeIndex: null
 };
 var pendingPhotoDataUrl = null;
 var pendingRecipePhotoDataUrl = null;
-function persistEntries() {
+function persistEntries(silent) {
 return saveJSON("kondate-entries", state.entries).then(function (res) {
-if (!res.ok) showError(res.error);
+if (!res.ok && !silent) showError(res.error);
 return res.ok;
 });
 }
-function persistRecipes() {
+function persistRecipes(silent) {
 return saveJSON("kondate-recipes", state.recipes).then(function (res) {
-if (!res.ok) showError(res.error);
+if (!res.ok && !silent) showError(res.error);
 return res.ok;
 });
 }
@@ -271,6 +337,14 @@ state.error = null;
 render();
 }, 6000);
 }
+function showStorageFullNotice() {
+state.error = "保存容量がいっぱいやったから、写真なしで保存したで。写真を見るには、使わなくなった古い写真をいくつか削除してな。";
+render();
+setTimeout(function () {
+state.error = null;
+render();
+}, 9000);
+}
 function flashSaved() {
 state.savedFlash = true;
 render();
@@ -280,21 +354,29 @@ render();
 }, 1400);
 }
 async function saveEntry(date, label, content, photo, editingId) {
+var entryRef;
 if (editingId) {
-var existing = state.entries.find(function (e) { return e.id === editingId; });
-if (existing) {
-existing.date = date;
-existing.label = label;
-existing.content = content;
-existing.photo = photo || null;
+entryRef = state.entries.find(function (e) { return e.id === editingId; });
+if (entryRef) {
+entryRef.date = date;
+entryRef.label = label;
+entryRef.content = content;
+entryRef.photo = photo || null;
 }
 } else {
-state.entries.unshift({ id: uid(), createdAt: Date.now(), date: date, label:
-label, content: content, photo: photo || null });
+entryRef = { id: uid(), createdAt: Date.now(), date: date, label: label,
+content: content, photo: photo || null };
+state.entries.unshift(entryRef);
 }
 state.saving = true;
 render();
-var ok = await persistEntries();
+var ok = await persistEntries(true);
+if (!ok && entryRef && entryRef.photo) {
+entryRef.photo = null;
+ok = await persistEntries(true);
+if (ok) showStorageFullNotice();
+}
+if (!ok) showError();
 pendingPhotoDataUrl = null;
 state.saving = false;
 state.showForm = false;
@@ -308,22 +390,30 @@ render();
 await persistEntries();
 }
 async function saveRecipe(type, name, photo, link, note, editingId) {
+var recipeRef;
 if (editingId) {
-var existing = state.recipes.find(function (r) { return r.id === editingId; });
-if (existing) {
-existing.type = type;
-existing.name = name;
-existing.photo = photo || null;
-existing.link = link || "";
-existing.note = note || "";
+recipeRef = state.recipes.find(function (r) { return r.id === editingId; });
+if (recipeRef) {
+recipeRef.type = type;
+recipeRef.name = name;
+recipeRef.photo = photo || null;
+recipeRef.link = link || "";
+recipeRef.note = note || "";
 }
 } else {
-state.recipes.unshift({ id: uid(), createdAt: Date.now(), type: type, name: name,
-photo: photo || null, link: link || "", note: note || "" });
+recipeRef = { id: uid(), createdAt: Date.now(), type: type, name: name,
+photo: photo || null, link: link || "", note: note || "" };
+state.recipes.unshift(recipeRef);
 }
 state.saving = true;
 render();
-var ok = await persistRecipes();
+var ok = await persistRecipes(true);
+if (!ok && recipeRef && recipeRef.photo) {
+recipeRef.photo = null;
+ok = await persistRecipes(true);
+if (ok) showStorageFullNotice();
+}
+if (!ok) showError();
 pendingRecipePhotoDataUrl = null;
 state.saving = false;
 state.showForm = false;
@@ -345,14 +435,14 @@ var reader = new FileReader();
 reader.onload = function (e) {
 var img = new Image();
 img.onload = function () {
-var maxW = 640;
+var maxW = 480;
 var scale = Math.min(1, maxW / img.width);
 var canvas = document.createElement("canvas");
 canvas.width = Math.round(img.width * scale);
 canvas.height = Math.round(img.height * scale);
 var ctx = canvas.getContext("2d");
 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-callback(canvas.toDataURL("image/jpeg", 0.6));
+callback(canvas.toDataURL("image/jpeg", 0.45));
 };
 img.src = e.target.result;
 };
