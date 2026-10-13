@@ -892,6 +892,17 @@ state.editingId = id;
 pendingPhotoDataUrl = entry.photo || null;
 state.showForm = true;
 render();
+// Put the cursor at the very end of the existing text so continuing to
+// type ("続きから") just works, without having to tap the exact spot
+// (which is unreliable while the box is still growing to full height).
+var ta = document.getElementById("e-content");
+if (ta) {
+requestAnimationFrame(function () {
+var len = ta.value.length;
+ta.focus();
+ta.setSelectionRange(len, len);
+});
+}
 }
 function openRecipeFormForNew() {
 state.formMode = "recipe";
@@ -1151,7 +1162,13 @@ contentTextarea.style.height = "auto";
 contentTextarea.style.height = (contentTextarea.scrollHeight + 2) + "px";
 };
 autoGrow();
+// On first paint right after the modal HTML is inserted, scrollHeight can
+// still reflect the old/unlaid-out size on some devices, so existing
+// multi-line content gets measured too short and the box stays clipped
+// at its CSS min-height. Re-run once layout has actually settled.
+requestAnimationFrame(autoGrow);
 contentTextarea.addEventListener("input", autoGrow);
+contentTextarea.addEventListener("focus", autoGrow);
 }
 var photoInput = app.querySelector("#e-photo");
 if (photoInput) {
